@@ -79,6 +79,8 @@ textarea:focus-visible {
   border-right: 1px solid var(--line);
   background: rgba(13, 14, 20, 0.84);
   backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
 }
 
 .brand {
@@ -100,9 +102,85 @@ textarea:focus-visible {
 }
 
 .sidebar-copy {
-  margin-top: 36px;
+  margin: 20px 4px;
   color: var(--muted);
   line-height: 1.7;
+}
+
+.new-chat-button,
+.nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid transparent;
+  color: var(--muted-strong);
+  text-align: left;
+}
+
+.new-chat-button {
+  margin-top: 30px;
+  padding: 13px 14px;
+  border-color: var(--line-strong);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  font-weight: 700;
+}
+
+.new-chat-button:hover,
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.065);
+  color: var(--text);
+}
+
+.primary-nav {
+  margin-top: 28px;
+}
+
+.nav-label,
+.eyebrow {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.nav-label {
+  margin: 0 12px 8px;
+}
+
+.nav-item {
+  margin: 4px 0;
+  padding: 11px 12px;
+  border-radius: 12px;
+  background: transparent;
+}
+
+.nav-item.active {
+  border-color: rgba(139, 92, 246, 0.2);
+  background: var(--accent-soft);
+  color: #ddd2ff;
+}
+
+.nav-badge {
+  margin-left: auto;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(52, 211, 153, 0.12);
+  color: #6ee7b7;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.sidebar-spacer {
+  flex: 1;
+}
+
+.settings-button {
+  flex: 0 0 auto;
 }
 
 .main-panel {
@@ -125,6 +203,15 @@ textarea:focus-visible {
 .topbar h1 {
   margin: 0;
   font: 600 18px/1.2 "Manrope", sans-serif;
+}
+
+.eyebrow {
+  display: block;
+  margin-bottom: 5px;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 .content {
