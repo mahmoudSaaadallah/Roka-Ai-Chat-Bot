@@ -87,6 +87,19 @@ function render() {
       render();
     });
   });
+  document.querySelectorAll("[data-prompt]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const input = document.querySelector("#chat-input");
+      input.value = button.dataset.prompt;
+      input.focus();
+    });
+  });
+  document.querySelector('[data-action="new-chat"]').addEventListener("click", () => {
+    state.mode = "chat";
+    state.messages = [];
+    render();
+    document.querySelector("#chat-input").focus();
+  });
 }
 
 function renderImagePlaceholder() {
@@ -100,9 +113,34 @@ function renderImagePlaceholder() {
 function renderConversation() {
   if (!state.messages.length) {
     return `
-      <div class="empty-state">
-        <h2>Where ideas<br />find momentum.</h2>
+      <div class="empty-state welcome-state">
+        <div class="welcome-orb" aria-hidden="true">
+          <span>${icons.sparkles}</span>
+        </div>
+        <span class="welcome-kicker">Your creative thinking partner</span>
+        <h2>Where ideas<br /><span>find momentum.</span></h2>
         <p>Think out loud, untangle a problem, or turn a rough thought into something worth sharing.</p>
+
+        <div class="prompt-grid" aria-label="Suggested prompts">
+          <button class="prompt-card" type="button" data-prompt="Help me turn a rough idea into a clear plan">
+            <span class="prompt-number">01</span>
+            <strong>Shape an idea</strong>
+            <span>Turn scattered thoughts into a clear direction.</span>
+            <span class="prompt-arrow">${icons.arrow}</span>
+          </button>
+          <button class="prompt-card" type="button" data-prompt="Explain a complex topic to me in simple terms">
+            <span class="prompt-number">02</span>
+            <strong>Learn something</strong>
+            <span>Make a complex topic feel approachable.</span>
+            <span class="prompt-arrow">${icons.arrow}</span>
+          </button>
+          <button class="prompt-card" type="button" data-prompt="Help me write something memorable and concise">
+            <span class="prompt-number">03</span>
+            <strong>Write with impact</strong>
+            <span>Find the words that make the message land.</span>
+            <span class="prompt-arrow">${icons.arrow}</span>
+          </button>
+        </div>
       </div>`;
   }
 
