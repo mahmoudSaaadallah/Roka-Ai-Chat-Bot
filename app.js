@@ -12,6 +12,7 @@ const icons = {
   image: icon('<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 15-4.5-4.5L8 19"/>'),
   plus: icon('<path d="M12 5v14M5 12h14"/>'),
   settings: icon('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/>'),
+  copy: icon('<rect x="9" y="9" width="10" height="10" rx="2"/><path d="M15 9V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>'),
 };
 
 const state = {
@@ -100,6 +101,13 @@ function render() {
     render();
     document.querySelector("#chat-input").focus();
   });
+  document.querySelectorAll("[data-copy-message]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const message = state.messages[Number(button.dataset.copyMessage)];
+      await navigator.clipboard.writeText(message.text);
+      button.querySelector("span").textContent = "Copied";
+    });
+  });
 }
 
 function renderImagePlaceholder() {
@@ -144,9 +152,32 @@ function renderConversation() {
       </div>`;
   }
 
-  return state.messages
-    .map((message) => `<p><strong>${message.role === "user" ? "You" : "Roka"}:</strong> ${escapeHtml(message.text)}</p>`)
-    .join("");
+  return `
+    <div class="message-list">
+      ${state.messages
+        .map((message, index) => {
+          const isUser = message.role === "user";
+          return `
+            <article class="message-row ${isUser ? "user-message" : "assistant-message"}">
+              <div class="message-avatar" aria-hidden="true">
+                ${isUser ? "Y" : icons.sparkles}
+              </div>
+              <div class="message-body">
+                <div class="message-meta">
+                  <strong>${isUser ? "You" : "Roka"}</strong>
+                  <span>${message.time || "Just now"}</span>
+                </div>
+                <div class="message-bubble">${escapeHtml(message.text).replaceAll("\n", "<br />")}</div>
+                ${
+                  isUser
+                    ? ""
+                    : `<button class="message-action" type="button" data-copy-message="${index}" aria-label="Copy response">${icons.copy}<span>Copy</span></button>`
+                }
+              </div>
+            </article>`;
+        })
+        .join("")}
+    </div>`;
 }
 
 function handleSubmit(event) {
@@ -155,7 +186,11 @@ function handleSubmit(event) {
   const prompt = input.value.trim();
   if (!prompt) return;
 
-  state.messages.push({ role: "user", text: prompt });
+  state.messages.push({
+    role: "user",
+    text: prompt,
+    time: new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date()),
+  });
   input.value = "";
   render();
 }
