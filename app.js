@@ -13,6 +13,7 @@ const icons = {
   plus: icon('<path d="M12 5v14M5 12h14"/>'),
   settings: icon('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3 1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/>'),
   copy: icon('<rect x="9" y="9" width="10" height="10" rx="2"/><path d="M15 9V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>'),
+  paperclip: icon('<path d="m20.5 11.5-8.8 8.8a6 6 0 0 1-8.5-8.5l9.1-9.1a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 1 1-2.8-2.8l8.5-8.5"/>'),
 };
 
 const state = {
@@ -74,9 +75,16 @@ function render() {
 
         <footer class="composer-wrap" ${state.mode === "image" ? "hidden" : ""}>
           <form class="composer" id="chat-form">
-            <input id="chat-input" autocomplete="off" placeholder="Ask Roka anything…" aria-label="Message Roka AI" />
-            <button class="primary-button" type="submit">Send ${icons.arrow}</button>
+            <textarea id="chat-input" rows="1" maxlength="2000" autocomplete="off" placeholder="Ask Roka anything…" aria-label="Message Roka AI"></textarea>
+            <div class="composer-actions">
+              <div class="composer-tools">
+                <button class="icon-button" type="button" aria-label="Attach a file" title="Attachments coming soon">${icons.paperclip}</button>
+                <span class="composer-hint">Enter to send · Shift + Enter for a new line</span>
+              </div>
+              <button class="send-button" type="submit" aria-label="Send message">${icons.arrow}</button>
+            </div>
           </form>
+          <p class="composer-note">Roka can make mistakes. Check important information.</p>
         </footer>
       </main>
     </div>`;
@@ -107,6 +115,17 @@ function render() {
       await navigator.clipboard.writeText(message.text);
       button.querySelector("span").textContent = "Copied";
     });
+  });
+  const composerInput = document.querySelector("#chat-input");
+  composerInput.addEventListener("input", () => {
+    composerInput.style.height = "auto";
+    composerInput.style.height = `${Math.min(composerInput.scrollHeight, 160)}px`;
+  });
+  composerInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      document.querySelector("#chat-form").requestSubmit();
+    }
   });
 }
 
