@@ -1,3 +1,5 @@
+import { GoogleGenAI } from "@google/genai";
+
 const app = document.querySelector("#app");
 
 const icon = (path, className = "icon") => `
@@ -20,6 +22,7 @@ const state = {
   mode: "chat",
   messages: [],
   loading: false,
+  apiKey: sessionStorage.getItem("roka_api_key") || "",
 };
 
 function escapeHtml(value) {
@@ -66,7 +69,10 @@ function render() {
             <span class="eyebrow">${state.mode === "chat" ? "AI chat" : "Creative studio"}</span>
             <h1>${state.mode === "chat" ? "New conversation" : "Image studio"}</h1>
           </div>
-          <span>Gemini 2.5 Flash</span>
+          <div class="model-status">
+            <span class="status-dot"></span>
+            <span>Gemini 2.5 Flash</span>
+          </div>
         </header>
 
         <section class="content" id="conversation">
@@ -126,6 +132,11 @@ function render() {
       event.preventDefault();
       document.querySelector("#chat-form").requestSubmit();
     }
+  });
+  if (state.loading) composerInput.disabled = true;
+  requestAnimationFrame(() => {
+    const conversation = document.querySelector("#conversation");
+    conversation.scrollTop = conversation.scrollHeight;
   });
 }
 
@@ -196,14 +207,44 @@ function renderConversation() {
             </article>`;
         })
         .join("")}
+      ${state.loading ? renderTypingIndicator() : ""}
     </div>`;
 }
 
-function handleSubmit(event) {
+function renderTypingIndicator() {
+  return `
+    <article class="message-row assistant-message typing-row">
+      <div class="message-avatar" aria-hidden="true">${icons.sparkles}</div>
+      <div class="message-body">
+        <div class="message-meta"><strong>Roka</strong><span>Thinking</span></div>
+        <div class="message-bubble typing-bubble" aria-label="Roka is thinking">
+          <i></i><i></i><i></i>
+        </div>
+      </div>
+    </article>`;
+}
+
+async function generateReply(prompt) {
+  if (!state.apiKey) {
+    return "Add your Gemini API key in Settings to start chatting. It stays only in this browser session.";
+  }
+
+  const ai = new GoogleGenAI({ apiKey: state.apiKey });
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: state.messages.map((message) => ({
+      role: message.role === "assistant" ? "model" : "user",
+      parts: [{ text: message.text }],
+    })),
+  });
+  return response.text;
+}
+
+async function handleSubmit(event) {
   event.preventDefault();
   const input = document.querySelector("#chat-input");
   const prompt = input.value.trim();
-  if (!prompt) return;
+  if (!prompt || state.loading) return;
 
   state.messages.push({
     role: "user",
@@ -211,7 +252,28 @@ function handleSubmit(event) {
     time: new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date()),
   });
   input.value = "";
+  state.loading = true;
   render();
+
+  try {
+    const reply = await generateReply(prompt);
+    state.messages.push({
+      role: "assistant",
+      text: reply,
+      time: new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date()),
+    });
+  } catch (error) {
+    console.error("Gemini request failed", error);
+    state.messages.push({
+      role: "assistant",
+      text: "I couldn't complete that request. Check your API key and connection, then try again.",
+      time: "Error",
+    });
+  } finally {
+    state.loading = false;
+    render();
+    document.querySelector("#chat-input").focus();
+  }
 }
 
 render();
