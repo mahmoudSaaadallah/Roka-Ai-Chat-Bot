@@ -27,6 +27,8 @@ const state = {
   imageLoading: false,
   imagePrompt: "",
   imageUrl: "",
+  imageRatio: "square",
+  imageStyle: "cinematic",
 };
 
 function escapeHtml(value) {
@@ -140,6 +142,20 @@ function render() {
   if (state.loading) composerInput.disabled = true;
   const imageForm = document.querySelector("#image-form");
   if (imageForm) imageForm.addEventListener("submit", handleImageSubmit);
+  document.querySelectorAll("[data-image-ratio]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.imagePrompt = document.querySelector("#image-prompt").value;
+      state.imageRatio = button.dataset.imageRatio;
+      render();
+    });
+  });
+  document.querySelectorAll("[data-image-style]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.imagePrompt = document.querySelector("#image-prompt").value;
+      state.imageStyle = button.dataset.imageStyle;
+      render();
+    });
+  });
   requestAnimationFrame(() => {
     const conversation = document.querySelector("#conversation");
     conversation.scrollTop = conversation.scrollHeight;
@@ -156,12 +172,28 @@ function renderImagePlaceholder() {
       </div>
 
       <div class="studio-card">
-        <div class="image-canvas ${state.imageLoading ? "loading" : ""}">
+        <div class="image-canvas ratio-${state.imageRatio} ${state.imageLoading ? "loading" : ""}">
           ${renderImageCanvas()}
         </div>
         <form class="image-form" id="image-form">
           <label for="image-prompt">Describe your image</label>
           <textarea id="image-prompt" rows="3" maxlength="600" placeholder="A quiet glass cabin beneath the northern lights, cinematic light…">${escapeHtml(state.imagePrompt)}</textarea>
+          <fieldset class="studio-fieldset">
+            <legend>Aspect ratio</legend>
+            <div class="option-row">
+              <button class="option-chip ${state.imageRatio === "square" ? "active" : ""}" type="button" data-image-ratio="square"><i class="ratio-icon square"></i>Square</button>
+              <button class="option-chip ${state.imageRatio === "portrait" ? "active" : ""}" type="button" data-image-ratio="portrait"><i class="ratio-icon portrait"></i>Portrait</button>
+              <button class="option-chip ${state.imageRatio === "landscape" ? "active" : ""}" type="button" data-image-ratio="landscape"><i class="ratio-icon landscape"></i>Wide</button>
+            </div>
+          </fieldset>
+          <fieldset class="studio-fieldset">
+            <legend>Visual style</legend>
+            <div class="style-row">
+              ${["cinematic", "editorial", "anime", "minimal"]
+                .map((style) => `<button class="style-chip ${state.imageStyle === style ? "active" : ""}" type="button" data-image-style="${style}">${style}</button>`)
+                .join("")}
+            </div>
+          </fieldset>
           <button class="primary-button studio-generate" type="submit" ${state.imageLoading ? "disabled" : ""}>
             ${icons.wand}<span>${state.imageLoading ? "Creating…" : "Create image"}</span>
           </button>
@@ -191,7 +223,14 @@ function handleImageSubmit(event) {
   state.imageUrl = "";
   render();
 
-  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true`;
+  const sizes = {
+    square: [1024, 1024],
+    portrait: [832, 1040],
+    landscape: [1216, 832],
+  };
+  const [width, height] = sizes[state.imageRatio];
+  const styledPrompt = `${prompt}, ${state.imageStyle} visual style`;
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(styledPrompt)}?width=${width}&height=${height}&nologo=true`;
   const generated = new Image();
   generated.onload = () => {
     state.imageUrl = url;
