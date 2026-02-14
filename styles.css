@@ -502,6 +502,42 @@ textarea:focus-visible {
   object-fit: cover;
 }
 
+.image-result-actions {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  display: flex;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  background: rgba(8, 9, 14, 0.78);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(16px);
+}
+
+.canvas-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #f4f4f7;
+  font-size: 11px;
+  text-decoration: none;
+}
+
+.canvas-action:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.canvas-action .icon {
+  width: 15px;
+  height: 15px;
+}
+
 .image-empty,
 .image-loading {
   display: grid;
@@ -566,6 +602,13 @@ textarea:focus-visible {
 
 .image-form textarea:focus {
   border-color: rgba(139, 92, 246, 0.5);
+}
+
+.studio-error {
+  margin: 9px 0 0;
+  color: var(--danger);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .studio-fieldset {

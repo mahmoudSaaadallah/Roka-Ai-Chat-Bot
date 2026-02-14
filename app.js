@@ -17,6 +17,8 @@ const icons = {
   copy: icon('<rect x="9" y="9" width="10" height="10" rx="2"/><path d="M15 9V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>'),
   paperclip: icon('<path d="m20.5 11.5-8.8 8.8a6 6 0 0 1-8.5-8.5l9.1-9.1a4 4 0 0 1 5.7 5.7l-9.2 9.2a2 2 0 1 1-2.8-2.8l8.5-8.5"/>'),
   wand: icon('<path d="m15 4 5 5L8 21H3v-5L15 4Z"/><path d="m13 6 5 5M6 3v3M4.5 4.5h3M19 16v4M17 18h4"/>'),
+  download: icon('<path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/>'),
+  refresh: icon('<path d="M20 7h-5V2"/><path d="M20 7a9 9 0 1 0 1 7"/>'),
 };
 
 const state = {
@@ -29,6 +31,7 @@ const state = {
   imageUrl: "",
   imageRatio: "square",
   imageStyle: "cinematic",
+  imageError: "",
 };
 
 function escapeHtml(value) {
@@ -142,6 +145,10 @@ function render() {
   if (state.loading) composerInput.disabled = true;
   const imageForm = document.querySelector("#image-form");
   if (imageForm) imageForm.addEventListener("submit", handleImageSubmit);
+  const regenerateButton = document.querySelector("[data-regenerate]");
+  if (regenerateButton) {
+    regenerateButton.addEventListener("click", () => document.querySelector("#image-form").requestSubmit());
+  }
   document.querySelectorAll("[data-image-ratio]").forEach((button) => {
     button.addEventListener("click", () => {
       state.imagePrompt = document.querySelector("#image-prompt").value;
@@ -178,6 +185,7 @@ function renderImagePlaceholder() {
         <form class="image-form" id="image-form">
           <label for="image-prompt">Describe your image</label>
           <textarea id="image-prompt" rows="3" maxlength="600" placeholder="A quiet glass cabin beneath the northern lights, cinematic light…">${escapeHtml(state.imagePrompt)}</textarea>
+          ${state.imageError ? `<p class="studio-error" role="alert">${escapeHtml(state.imageError)}</p>` : ""}
           <fieldset class="studio-fieldset">
             <legend>Aspect ratio</legend>
             <div class="option-row">
@@ -207,7 +215,12 @@ function renderImageCanvas() {
     return `<div class="image-loading"><span>${icons.sparkles}</span><strong>Bringing your idea to life</strong><small>This can take a few moments.</small></div>`;
   }
   if (state.imageUrl) {
-    return `<img src="${state.imageUrl}" alt="${escapeHtml(state.imagePrompt)}" />`;
+    return `
+      <img src="${state.imageUrl}" alt="${escapeHtml(state.imagePrompt)}" />
+      <div class="image-result-actions">
+        <a class="canvas-action" href="${state.imageUrl}" target="_blank" rel="noopener" download="roka-ai-image.jpg">${icons.download}<span>Download</span></a>
+        <button class="canvas-action" type="button" data-regenerate>${icons.refresh}<span>Regenerate</span></button>
+      </div>`;
   }
   return `<div class="image-empty"><span>${icons.image}</span><strong>Your canvas is ready</strong><small>The generated image will appear here.</small></div>`;
 }
@@ -221,6 +234,7 @@ function handleImageSubmit(event) {
   state.imagePrompt = prompt;
   state.imageLoading = true;
   state.imageUrl = "";
+  state.imageError = "";
   render();
 
   const sizes = {
@@ -239,6 +253,7 @@ function handleImageSubmit(event) {
   };
   generated.onerror = () => {
     state.imageLoading = false;
+    state.imageError = "The image service didn't respond. Please try again in a moment.";
     render();
   };
   generated.src = url;
