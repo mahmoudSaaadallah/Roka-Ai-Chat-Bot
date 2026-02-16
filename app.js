@@ -32,6 +32,7 @@ const state = {
   imageRatio: "square",
   imageStyle: "cinematic",
   imageError: "",
+  showSettings: false,
 };
 
 function escapeHtml(value) {
@@ -79,7 +80,7 @@ function render() {
             <h1>${state.mode === "chat" ? "New conversation" : "Image studio"}</h1>
           </div>
           <div class="model-status">
-            <span class="status-dot"></span>
+            <span class="status-dot ${state.apiKey ? "" : "offline"}"></span>
             <span>Gemini 2.5 Flash</span>
           </div>
         </header>
@@ -102,7 +103,8 @@ function render() {
           <p class="composer-note">Roka can make mistakes. Check important information.</p>
         </footer>
       </main>
-    </div>`;
+    </div>
+    ${state.showSettings ? renderSettingsModal() : ""}`;
 
   document.querySelector("#chat-form").addEventListener("submit", handleSubmit);
   document.querySelectorAll("[data-mode]").forEach((button) => {
@@ -124,6 +126,19 @@ function render() {
     render();
     document.querySelector("#chat-input").focus();
   });
+  document.querySelector('[data-action="settings"]').addEventListener("click", () => {
+    state.showSettings = true;
+    render();
+    document.querySelector("#api-key").focus();
+  });
+  document.querySelectorAll("[data-close-settings]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.showSettings = false;
+      render();
+    });
+  });
+  const settingsForm = document.querySelector("#settings-form");
+  if (settingsForm) settingsForm.addEventListener("submit", handleSettingsSubmit);
   document.querySelectorAll("[data-copy-message]").forEach((button) => {
     button.addEventListener("click", async () => {
       const message = state.messages[Number(button.dataset.copyMessage)];
@@ -167,6 +182,44 @@ function render() {
     const conversation = document.querySelector("#conversation");
     conversation.scrollTop = conversation.scrollHeight;
   });
+}
+
+function renderSettingsModal() {
+  return `
+    <div class="modal-backdrop" data-close-settings>
+      <section class="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title" onclick="event.stopPropagation()">
+        <div class="modal-header">
+          <div>
+            <span class="eyebrow">Preferences</span>
+            <h2 id="settings-title">Connect your model</h2>
+          </div>
+          <button class="modal-close" type="button" data-close-settings aria-label="Close settings">×</button>
+        </div>
+        <p class="modal-copy">Add a Gemini API key to power conversations. The key is kept in this browser tab only and is cleared when the tab closes.</p>
+        <form id="settings-form">
+          <label for="api-key">Gemini API key</label>
+          <input id="api-key" name="apiKey" type="password" value="${escapeHtml(state.apiKey)}" placeholder="AIza…" autocomplete="off" />
+          <div class="privacy-note">
+            <span class="status-dot"></span>
+            <span>Session-only storage · never committed to the project</span>
+          </div>
+          <div class="modal-actions">
+            <button class="secondary-button" type="button" data-close-settings>Cancel</button>
+            <button class="primary-button" type="submit">Save connection</button>
+          </div>
+        </form>
+      </section>
+    </div>`;
+}
+
+function handleSettingsSubmit(event) {
+  event.preventDefault();
+  const apiKey = new FormData(event.currentTarget).get("apiKey").trim();
+  state.apiKey = apiKey;
+  if (apiKey) sessionStorage.setItem("roka_api_key", apiKey);
+  else sessionStorage.removeItem("roka_api_key");
+  state.showSettings = false;
+  render();
 }
 
 function renderImagePlaceholder() {
