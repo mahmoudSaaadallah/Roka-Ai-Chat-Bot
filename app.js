@@ -21,9 +21,13 @@ const icons = {
   refresh: icon('<path d="M20 7h-5V2"/><path d="M20 7a9 9 0 1 0 1 7"/>'),
 };
 
+const savedConversations = loadConversations();
+
 const state = {
   mode: "chat",
-  messages: [],
+  messages: savedConversations[0]?.messages || [],
+  conversations: savedConversations,
+  activeConversationId: savedConversations[0]?.id || null,
   loading: false,
   apiKey: sessionStorage.getItem("roka_api_key") || "",
   imageLoading: false,
@@ -65,6 +69,8 @@ function render() {
             ${icons.image}<span>Image studio</span>
           </button>
         </nav>
+
+        ${renderConversationHistory()}
 
         <div class="sidebar-spacer"></div>
         <p class="sidebar-copy">A calm space for your next idea, question, or creative experiment.</p>
@@ -123,8 +129,12 @@ function render() {
   document.querySelector('[data-action="new-chat"]').addEventListener("click", () => {
     state.mode = "chat";
     state.messages = [];
+    state.activeConversationId = null;
     render();
     document.querySelector("#chat-input").focus();
+  });
+  document.querySelectorAll("[data-conversation-id]").forEach((button) => {
+    button.addEventListener("click", () => openConversation(button.dataset.conversationId));
   });
   document.querySelector('[data-action="settings"]').addEventListener("click", () => {
     state.showSettings = true;
@@ -182,6 +192,67 @@ function render() {
     const conversation = document.querySelector("#conversation");
     conversation.scrollTop = conversation.scrollHeight;
   });
+}
+
+function loadConversations() {
+  try {
+    return JSON.parse(localStorage.getItem("roka_conversations")) || [];
+  } catch {
+    return [];
+  }
+}
+
+function renderConversationHistory() {
+  if (!state.conversations.length) return "";
+  return `
+    <section class="history-panel" aria-label="Recent conversations">
+      <p class="nav-label">Recent</p>
+      <div class="history-list">
+        ${state.conversations
+          .slice(0, 5)
+          .map(
+            (conversation) => `
+              <button class="history-item ${state.activeConversationId === conversation.id ? "active" : ""}" type="button" data-conversation-id="${conversation.id}">
+                <span>${icons.chat}</span>
+                <span class="history-copy">
+                  <strong>${escapeHtml(conversation.title)}</strong>
+                  <small>${conversation.messages.length} messages</small>
+                </span>
+              </button>`,
+          )
+          .join("")}
+      </div>
+    </section>`;
+}
+
+function saveCurrentConversation() {
+  const firstPrompt = state.messages.find((message) => message.role === "user");
+  if (!firstPrompt) return;
+
+  if (!state.activeConversationId) {
+    state.activeConversationId = crypto.randomUUID?.() || `conversation-${Date.now()}`;
+  }
+
+  const conversation = {
+    id: state.activeConversationId,
+    title: firstPrompt.text.slice(0, 36),
+    messages: state.messages,
+    updatedAt: Date.now(),
+  };
+  state.conversations = [
+    conversation,
+    ...state.conversations.filter((item) => item.id !== conversation.id),
+  ].slice(0, 12);
+  localStorage.setItem("roka_conversations", JSON.stringify(state.conversations));
+}
+
+function openConversation(id) {
+  const conversation = state.conversations.find((item) => item.id === id);
+  if (!conversation) return;
+  state.activeConversationId = id;
+  state.messages = conversation.messages;
+  state.mode = "chat";
+  render();
 }
 
 function renderSettingsModal() {
@@ -415,6 +486,7 @@ async function handleSubmit(event) {
     text: prompt,
     time: new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date()),
   });
+  saveCurrentConversation();
   input.value = "";
   state.loading = true;
   render();
@@ -426,6 +498,7 @@ async function handleSubmit(event) {
       text: reply,
       time: new Intl.DateTimeFormat("en", { hour: "numeric", minute: "2-digit" }).format(new Date()),
     });
+    saveCurrentConversation();
   } catch (error) {
     console.error("Gemini request failed", error);
     state.messages.push({
@@ -433,6 +506,7 @@ async function handleSubmit(event) {
       text: "I couldn't complete that request. Check your API key and connection, then try again.",
       time: "Error",
     });
+    saveCurrentConversation();
   } finally {
     state.loading = false;
     render();
