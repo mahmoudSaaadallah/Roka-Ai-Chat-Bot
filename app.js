@@ -19,6 +19,8 @@ const icons = {
   wand: icon('<path d="m15 4 5 5L8 21H3v-5L15 4Z"/><path d="m13 6 5 5M6 3v3M4.5 4.5h3M19 16v4M17 18h4"/>'),
   download: icon('<path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/>'),
   refresh: icon('<path d="M20 7h-5V2"/><path d="M20 7a9 9 0 1 0 1 7"/>'),
+  sun: icon('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
+  moon: icon('<path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5a8.5 8.5 0 1 0 12 12Z"/>'),
 };
 
 const savedConversations = loadConversations();
@@ -37,7 +39,10 @@ const state = {
   imageStyle: "cinematic",
   imageError: "",
   showSettings: false,
+  theme: localStorage.getItem("roka_theme") || "dark",
 };
+
+document.documentElement.dataset.theme = state.theme;
 
 function escapeHtml(value) {
   return value
@@ -85,9 +90,14 @@ function render() {
             <span class="eyebrow">${state.mode === "chat" ? "AI chat" : "Creative studio"}</span>
             <h1>${state.mode === "chat" ? "New conversation" : "Image studio"}</h1>
           </div>
-          <div class="model-status">
-            <span class="status-dot ${state.apiKey ? "" : "offline"}"></span>
-            <span>Gemini 2.5 Flash</span>
+          <div class="topbar-actions">
+            <div class="model-status">
+              <span class="status-dot ${state.apiKey ? "" : "offline"}"></span>
+              <span>Gemini 2.5 Flash</span>
+            </div>
+            <button class="theme-toggle" type="button" data-action="theme" aria-label="Switch to ${state.theme === "dark" ? "light" : "dark"} theme">
+              ${state.theme === "dark" ? icons.sun : icons.moon}
+            </button>
           </div>
         </header>
 
@@ -140,6 +150,12 @@ function render() {
     state.showSettings = true;
     render();
     document.querySelector("#api-key").focus();
+  });
+  document.querySelector('[data-action="theme"]').addEventListener("click", () => {
+    state.theme = state.theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = state.theme;
+    localStorage.setItem("roka_theme", state.theme);
+    render();
   });
   document.querySelectorAll("[data-close-settings]").forEach((button) => {
     button.addEventListener("click", () => {
