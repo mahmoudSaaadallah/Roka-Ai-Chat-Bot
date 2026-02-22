@@ -21,6 +21,8 @@ const icons = {
   refresh: icon('<path d="M20 7h-5V2"/><path d="M20 7a9 9 0 1 0 1 7"/>'),
   sun: icon('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
   moon: icon('<path d="M20.5 15.5A8.5 8.5 0 0 1 8.5 3.5a8.5 8.5 0 1 0 12 12Z"/>'),
+  menu: icon('<path d="M4 7h16M4 12h16M4 17h16"/>'),
+  close: icon('<path d="m6 6 12 12M18 6 6 18"/>'),
 };
 
 const savedConversations = loadConversations();
@@ -40,6 +42,7 @@ const state = {
   imageError: "",
   showSettings: false,
   theme: localStorage.getItem("roka_theme") || "dark",
+  mobileMenu: false,
 };
 
 document.documentElement.dataset.theme = state.theme;
@@ -56,7 +59,7 @@ function escapeHtml(value) {
 function render() {
   app.innerHTML = `
     <div class="workspace">
-      <aside class="sidebar">
+      <aside class="sidebar ${state.mobileMenu ? "mobile-open" : ""}">
         <div class="brand">
           <span class="brand-mark">${icons.sparkles}</span>
           <span>Roka AI</span>
@@ -83,12 +86,17 @@ function render() {
           ${icons.settings}<span>Settings</span>
         </button>
       </aside>
+      ${state.mobileMenu ? '<button class="mobile-backdrop" type="button" data-action="close-menu" aria-label="Close navigation"></button>' : ""}
 
       <main class="main-panel">
         <header class="topbar">
-          <div>
+          <div class="topbar-title">
+            <button class="mobile-menu-button" type="button" data-action="menu" aria-label="Open navigation">${icons.menu}</button>
+            <span class="mobile-brand-mark">${icons.sparkles}</span>
+            <div>
             <span class="eyebrow">${state.mode === "chat" ? "AI chat" : "Creative studio"}</span>
             <h1>${state.mode === "chat" ? "New conversation" : "Image studio"}</h1>
+            </div>
           </div>
           <div class="topbar-actions">
             <div class="model-status">
@@ -126,6 +134,7 @@ function render() {
   document.querySelectorAll("[data-mode]").forEach((button) => {
     button.addEventListener("click", () => {
       state.mode = button.dataset.mode;
+      state.mobileMenu = false;
       render();
     });
   });
@@ -140,6 +149,7 @@ function render() {
     state.mode = "chat";
     state.messages = [];
     state.activeConversationId = null;
+    state.mobileMenu = false;
     render();
     document.querySelector("#chat-input").focus();
   });
@@ -148,6 +158,7 @@ function render() {
   });
   document.querySelector('[data-action="settings"]').addEventListener("click", () => {
     state.showSettings = true;
+    state.mobileMenu = false;
     render();
     document.querySelector("#api-key").focus();
   });
@@ -155,6 +166,15 @@ function render() {
     state.theme = state.theme === "dark" ? "light" : "dark";
     document.documentElement.dataset.theme = state.theme;
     localStorage.setItem("roka_theme", state.theme);
+    render();
+  });
+  document.querySelector('[data-action="menu"]').addEventListener("click", () => {
+    state.mobileMenu = true;
+    render();
+  });
+  const closeMenu = document.querySelector('[data-action="close-menu"]');
+  if (closeMenu) closeMenu.addEventListener("click", () => {
+    state.mobileMenu = false;
     render();
   });
   document.querySelectorAll("[data-close-settings]").forEach((button) => {
