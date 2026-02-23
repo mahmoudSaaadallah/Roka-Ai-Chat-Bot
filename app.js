@@ -65,7 +65,7 @@ function render() {
           <span>Roka AI</span>
         </div>
         <button class="new-chat-button" type="button" data-action="new-chat">
-          ${icons.plus}<span>New conversation</span>
+          ${icons.plus}<span>New conversation</span><kbd>Ctrl N</kbd>
         </button>
 
         <nav class="primary-nav" aria-label="Workspace">
@@ -146,12 +146,7 @@ function render() {
     });
   });
   document.querySelector('[data-action="new-chat"]').addEventListener("click", () => {
-    state.mode = "chat";
-    state.messages = [];
-    state.activeConversationId = null;
-    state.mobileMenu = false;
-    render();
-    document.querySelector("#chat-input").focus();
+    startNewConversation();
   });
   document.querySelectorAll("[data-conversation-id]").forEach((button) => {
     button.addEventListener("click", () => openConversation(button.dataset.conversationId));
@@ -228,6 +223,35 @@ function render() {
     const conversation = document.querySelector("#conversation");
     conversation.scrollTop = conversation.scrollHeight;
   });
+}
+
+function startNewConversation() {
+  state.mode = "chat";
+  state.messages = [];
+  state.activeConversationId = null;
+  state.mobileMenu = false;
+  render();
+  document.querySelector("#chat-input").focus();
+}
+
+function handleKeyboardShortcuts(event) {
+  const modifier = event.ctrlKey || event.metaKey;
+  if (modifier && event.key.toLowerCase() === "k") {
+    event.preventDefault();
+    state.mode = "chat";
+    state.mobileMenu = false;
+    render();
+    document.querySelector("#chat-input").focus();
+  }
+  if (modifier && event.key.toLowerCase() === "n") {
+    event.preventDefault();
+    startNewConversation();
+  }
+  if (event.key === "Escape" && (state.showSettings || state.mobileMenu)) {
+    state.showSettings = false;
+    state.mobileMenu = false;
+    render();
+  }
 }
 
 function loadConversations() {
@@ -550,4 +574,5 @@ async function handleSubmit(event) {
   }
 }
 
+document.addEventListener("keydown", handleKeyboardShortcuts);
 render();
