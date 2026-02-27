@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 
 const app = document.querySelector("#app");
+let toastTimer;
 
 const icon = (path, className = "icon") => `
   <svg class="${className}" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -43,6 +44,7 @@ const state = {
   showSettings: false,
   theme: localStorage.getItem("roka_theme") || "dark",
   mobileMenu: false,
+  toast: null,
 };
 
 document.documentElement.dataset.theme = state.theme;
@@ -128,7 +130,8 @@ function render() {
         </footer>
       </main>
     </div>
-    ${state.showSettings ? renderSettingsModal() : ""}`;
+    ${state.showSettings ? renderSettingsModal() : ""}
+    ${state.toast ? `<div class="toast ${state.toast.tone}" role="status">${icons.sparkles}<span>${escapeHtml(state.toast.message)}</span></div>` : ""}`;
 
   document.querySelector("#chat-form").addEventListener("submit", handleSubmit);
   document.querySelectorAll("[data-mode]").forEach((button) => {
@@ -183,8 +186,12 @@ function render() {
   document.querySelectorAll("[data-copy-message]").forEach((button) => {
     button.addEventListener("click", async () => {
       const message = state.messages[Number(button.dataset.copyMessage)];
-      await navigator.clipboard.writeText(message.text);
-      button.querySelector("span").textContent = "Copied";
+      try {
+        await navigator.clipboard.writeText(message.text);
+        showToast("Response copied to your clipboard.");
+      } catch {
+        showToast("Copying isn't available in this browser.", "error");
+      }
     });
   });
   const composerInput = document.querySelector("#chat-input");
@@ -223,6 +230,16 @@ function render() {
     const conversation = document.querySelector("#conversation");
     conversation.scrollTop = conversation.scrollHeight;
   });
+}
+
+function showToast(message, tone = "success") {
+  clearTimeout(toastTimer);
+  state.toast = { message, tone };
+  render();
+  toastTimer = setTimeout(() => {
+    state.toast = null;
+    render();
+  }, 2800);
 }
 
 function startNewConversation() {
@@ -350,7 +367,7 @@ function handleSettingsSubmit(event) {
   if (apiKey) sessionStorage.setItem("roka_api_key", apiKey);
   else sessionStorage.removeItem("roka_api_key");
   state.showSettings = false;
-  render();
+  showToast(apiKey ? "Gemini is connected and ready." : "API key removed.");
 }
 
 function renderImagePlaceholder() {
@@ -433,12 +450,12 @@ function handleImageSubmit(event) {
   generated.onload = () => {
     state.imageUrl = url;
     state.imageLoading = false;
-    render();
+    showToast("Your image is ready.");
   };
   generated.onerror = () => {
     state.imageLoading = false;
     state.imageError = "The image service didn't respond. Please try again in a moment.";
-    render();
+    showToast("Image generation failed. Try again shortly.", "error");
   };
   generated.src = url;
 }
@@ -567,6 +584,7 @@ async function handleSubmit(event) {
       time: "Error",
     });
     saveCurrentConversation();
+    showToast("The model couldn't complete the request.", "error");
   } finally {
     state.loading = false;
     render();
