@@ -97,7 +97,7 @@ function render() {
             <span class="mobile-brand-mark">${icons.sparkles}</span>
             <div>
             <span class="eyebrow">${state.mode === "chat" ? "AI chat" : "Creative studio"}</span>
-            <h1>${state.mode === "chat" ? "New conversation" : "Image studio"}</h1>
+            <h1>${state.mode === "chat" ? getConversationTitle() : "Image studio"}</h1>
             </div>
           </div>
           <div class="topbar-actions">
@@ -105,7 +105,7 @@ function render() {
               <span class="status-dot ${state.apiKey ? "" : "offline"}"></span>
               <span>Gemini 2.5 Flash</span>
             </div>
-            <button class="theme-toggle" type="button" data-action="theme" aria-label="Switch to ${state.theme === "dark" ? "light" : "dark"} theme">
+            <button class="theme-toggle" type="button" data-action="theme" aria-pressed="${state.theme === "light"}" aria-label="Switch to ${state.theme === "dark" ? "light" : "dark"} theme">
               ${state.theme === "dark" ? icons.sun : icons.moon}
             </button>
           </div>
@@ -228,8 +228,15 @@ function render() {
   });
   requestAnimationFrame(() => {
     const conversation = document.querySelector("#conversation");
-    conversation.scrollTop = conversation.scrollHeight;
+    if (state.mode === "chat" && (state.messages.length || state.loading)) {
+      conversation.scrollTop = conversation.scrollHeight;
+    }
   });
+}
+
+function getConversationTitle() {
+  const active = state.conversations.find((conversation) => conversation.id === state.activeConversationId);
+  return active?.title || "New conversation";
 }
 
 function showToast(message, tone = "success") {
@@ -390,16 +397,16 @@ function renderImagePlaceholder() {
           <fieldset class="studio-fieldset">
             <legend>Aspect ratio</legend>
             <div class="option-row">
-              <button class="option-chip ${state.imageRatio === "square" ? "active" : ""}" type="button" data-image-ratio="square"><i class="ratio-icon square"></i>Square</button>
-              <button class="option-chip ${state.imageRatio === "portrait" ? "active" : ""}" type="button" data-image-ratio="portrait"><i class="ratio-icon portrait"></i>Portrait</button>
-              <button class="option-chip ${state.imageRatio === "landscape" ? "active" : ""}" type="button" data-image-ratio="landscape"><i class="ratio-icon landscape"></i>Wide</button>
+              <button class="option-chip ${state.imageRatio === "square" ? "active" : ""}" type="button" aria-pressed="${state.imageRatio === "square"}" data-image-ratio="square"><i class="ratio-icon square"></i>Square</button>
+              <button class="option-chip ${state.imageRatio === "portrait" ? "active" : ""}" type="button" aria-pressed="${state.imageRatio === "portrait"}" data-image-ratio="portrait"><i class="ratio-icon portrait"></i>Portrait</button>
+              <button class="option-chip ${state.imageRatio === "landscape" ? "active" : ""}" type="button" aria-pressed="${state.imageRatio === "landscape"}" data-image-ratio="landscape"><i class="ratio-icon landscape"></i>Wide</button>
             </div>
           </fieldset>
           <fieldset class="studio-fieldset">
             <legend>Visual style</legend>
             <div class="style-row">
               ${["cinematic", "editorial", "anime", "minimal"]
-                .map((style) => `<button class="style-chip ${state.imageStyle === style ? "active" : ""}" type="button" data-image-style="${style}">${style}</button>`)
+                .map((style) => `<button class="style-chip ${state.imageStyle === style ? "active" : ""}" type="button" aria-pressed="${state.imageStyle === style}" data-image-style="${style}">${style}</button>`)
                 .join("")}
             </div>
           </fieldset>
