@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
+import { renderMarkdown } from "./markdown.mjs";
 
 const app = document.querySelector("#app");
 let toastTimer;
@@ -516,7 +517,11 @@ function renderConversation() {
                   <strong>${isUser ? "You" : "Roka"}</strong>
                   <span>${message.time || "Just now"}</span>
                 </div>
-                <div class="message-bubble">${escapeHtml(message.text).replaceAll("\n", "<br />")}</div>
+                <div class="message-bubble ${isUser ? "" : "markdown-content"}">${
+                  isUser
+                    ? escapeHtml(message.text).replaceAll("\n", "<br />")
+                    : renderMarkdown(message.text)
+                }</div>
                 ${
                   isUser
                     ? ""
