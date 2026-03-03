@@ -8,12 +8,19 @@ function escapeHtml(value) {
 }
 
 function renderInline(value) {
-  return escapeHtml(value)
+  const inlineCode = [];
+  const tokenized = String(value).replace(/`([^`\n]+)`/g, (_, code) => {
+    const index = inlineCode.push(code) - 1;
+    return `\u0000INLINE${index}\u0000`;
+  });
+
+  return escapeHtml(tokenized)
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/__(.+?)__/g, "<strong>$1</strong>")
     .replace(/~~(.+?)~~/g, "<del>$1</del>")
     .replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, "$1<em>$2</em>")
-    .replace(/(^|[^_])_([^_\n]+?)_(?!_)/g, "$1<em>$2</em>");
+    .replace(/(^|[^_])_([^_\n]+?)_(?!_)/g, "$1<em>$2</em>")
+    .replace(/\u0000INLINE(\d+)\u0000/g, (_, index) => `<code>${escapeHtml(inlineCode[Number(index)])}</code>`);
 }
 
 /**
@@ -24,8 +31,22 @@ export function renderMarkdown(markdown = "") {
   const normalized = String(markdown).replaceAll("\r\n", "\n").trim();
   if (!normalized) return "";
 
-  return normalized
+  const codeBlocks = [];
+  const tokenized = normalized.replace(/```([\w+-]*)[ \t]*\n([\s\S]*?)```/g, (_, language, code) => {
+    const index = codeBlocks.push({ language: language.toLowerCase(), code: code.replace(/\n$/, "") }) - 1;
+    return `\n\n@@CODE:${index}@@\n\n`;
+  });
+
+  return tokenized
     .split(/\n{2,}/)
-    .map((paragraph) => `<p>${renderInline(paragraph).replaceAll("\n", "<br />")}</p>`)
+    .map((paragraph) => {
+      const codeMatch = paragraph.match(/^@@CODE:(\d+)@@$/);
+      if (codeMatch) {
+        const block = codeBlocks[Number(codeMatch[1])];
+        const language = block.language.replace(/[^a-z0-9+-]/g, "");
+        return `<pre data-language="${language}"><code>${escapeHtml(block.code)}</code></pre>`;
+      }
+      return `<p>${renderInline(paragraph).replaceAll("\n", "<br />")}</p>`;
+    })
     .join("");
 }
