@@ -23,6 +23,26 @@ function renderInline(value) {
     .replace(/\u0000INLINE(\d+)\u0000/g, (_, index) => `<code>${escapeHtml(inlineCode[Number(index)])}</code>`);
 }
 
+function renderTextBlock(block) {
+  const heading = block.match(/^(#{1,6})[ \t]+(.+)$/);
+  if (heading) {
+    const level = heading[1].length;
+    return `<h${level}>${renderInline(heading[2])}</h${level}>`;
+  }
+
+  if (/^(?:-{3,}|\*{3,}|_{3,})$/.test(block.trim())) {
+    return "<hr />";
+  }
+
+  const lines = block.split("\n");
+  if (lines.every((line) => /^>[ \t]?/.test(line))) {
+    const quote = lines.map((line) => line.replace(/^>[ \t]?/, "")).join("\n");
+    return `<blockquote>${renderInline(quote).replaceAll("\n", "<br />")}</blockquote>`;
+  }
+
+  return `<p>${renderInline(block).replaceAll("\n", "<br />")}</p>`;
+}
+
 /**
  * Render assistant text as safe, dependency-free Markdown.
  * More block and inline features are layered on by small parser helpers.
@@ -46,7 +66,7 @@ export function renderMarkdown(markdown = "") {
         const language = block.language.replace(/[^a-z0-9+-]/g, "");
         return `<pre data-language="${language}"><code>${escapeHtml(block.code)}</code></pre>`;
       }
-      return `<p>${renderInline(paragraph).replaceAll("\n", "<br />")}</p>`;
+      return renderTextBlock(paragraph);
     })
     .join("");
 }
