@@ -35,6 +35,24 @@ function renderTextBlock(block) {
   }
 
   const lines = block.split("\n");
+  const listPattern = /^\s*(?:[-+*]|\d+\.)\s+(.+)$/;
+  if (lines.every((line) => listPattern.test(line))) {
+    const ordered = /^\s*\d+\./.test(lines[0]);
+    const tag = ordered ? "ol" : "ul";
+    const items = lines
+      .map((line) => line.match(listPattern)[1])
+      .map((item) => {
+        const task = item.match(/^\[([ xX])\]\s+(.+)$/);
+        if (task) {
+          const checked = task[1].toLowerCase() === "x";
+          return `<li class="task-list-item"><input type="checkbox" disabled ${checked ? "checked" : ""} aria-label="${checked ? "Completed" : "Not completed"}" />${renderInline(task[2])}</li>`;
+        }
+        return `<li>${renderInline(item)}</li>`;
+      })
+      .join("");
+    return `<${tag}>${items}</${tag}>`;
+  }
+
   if (lines.every((line) => /^>[ \t]?/.test(line))) {
     const quote = lines.map((line) => line.replace(/^>[ \t]?/, "")).join("\n");
     return `<blockquote>${renderInline(quote).replaceAll("\n", "<br />")}</blockquote>`;
