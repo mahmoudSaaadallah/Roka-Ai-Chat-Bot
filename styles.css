@@ -752,6 +752,23 @@ textarea:focus-visible {
   accent-color: var(--accent);
 }
 
+.markdown-content a {
+  color: #b9a5ff;
+  font-weight: 600;
+  text-decoration-color: rgba(185, 165, 255, 0.45);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+.markdown-content a:hover {
+  color: #d8caff;
+  text-decoration-color: currentColor;
+}
+
+[data-theme="light"] .markdown-content a {
+  color: #6941c6;
+}
+
 .user-message .message-bubble {
   border-color: rgba(139, 92, 246, 0.22);
   border-radius: 18px 7px 18px 18px;

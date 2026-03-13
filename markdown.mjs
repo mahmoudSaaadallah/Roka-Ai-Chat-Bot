@@ -7,11 +7,24 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function sanitizeHref(value) {
+  const href = String(value).trim();
+  if (/^(https?:\/\/|mailto:)/i.test(href) || /^(\/|#)/.test(href)) {
+    return href;
+  }
+  return "";
+}
+
 function renderInline(value) {
   const inlineCode = [];
-  const tokenized = String(value).replace(/`([^`\n]+)`/g, (_, code) => {
+  const links = [];
+  const withoutCode = String(value).replace(/`([^`\n]+)`/g, (_, code) => {
     const index = inlineCode.push(code) - 1;
     return `\u0000INLINE${index}\u0000`;
+  });
+  const tokenized = withoutCode.replace(/\[([^\]]+)]\(([^\s)]+)(?:\s+["']([^"']+)["'])?\)/g, (source, label, href, title) => {
+    const index = links.push({ source, label, href, title }) - 1;
+    return `\u0000LINK${index}\u0000`;
   });
 
   return escapeHtml(tokenized)
@@ -20,7 +33,16 @@ function renderInline(value) {
     .replace(/~~(.+?)~~/g, "<del>$1</del>")
     .replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, "$1<em>$2</em>")
     .replace(/(^|[^_])_([^_\n]+?)_(?!_)/g, "$1<em>$2</em>")
-    .replace(/\u0000INLINE(\d+)\u0000/g, (_, index) => `<code>${escapeHtml(inlineCode[Number(index)])}</code>`);
+    .replace(/\u0000INLINE(\d+)\u0000/g, (_, index) => `<code>${escapeHtml(inlineCode[Number(index)])}</code>`)
+    .replace(/\u0000LINK(\d+)\u0000/g, (_, index) => {
+      const link = links[Number(index)];
+      const href = sanitizeHref(link.href);
+      if (!href) return escapeHtml(link.label);
+      const external = /^https?:\/\//i.test(href);
+      const title = link.title ? ` title="${escapeHtml(link.title)}"` : "";
+      const target = external ? ' target="_blank" rel="noopener noreferrer"' : "";
+      return `<a href="${escapeHtml(href)}"${title}${target}>${escapeHtml(link.label)}</a>`;
+    });
 }
 
 function renderTextBlock(block) {
