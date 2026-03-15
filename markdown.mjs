@@ -104,7 +104,14 @@ export function renderMarkdown(markdown = "") {
       if (codeMatch) {
         const block = codeBlocks[Number(codeMatch[1])];
         const language = block.language.replace(/[^a-z0-9+-]/g, "");
-        return `<pre data-language="${language}"><code>${escapeHtml(block.code)}</code></pre>`;
+        return `
+          <div class="code-block">
+            <div class="code-toolbar">
+              <span>${language || "code"}</span>
+              <button type="button" data-copy-code aria-label="Copy code">Copy</button>
+            </div>
+            <pre data-language="${language}"><code>${escapeHtml(block.code)}</code></pre>
+          </div>`;
       }
       return renderTextBlock(paragraph);
     })

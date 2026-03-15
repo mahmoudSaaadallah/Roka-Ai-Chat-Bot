@@ -195,6 +195,18 @@ function render() {
       }
     });
   });
+  document.querySelectorAll("[data-copy-code]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const code = button.closest(".code-block").querySelector("code").textContent;
+      try {
+        await navigator.clipboard.writeText(code);
+        button.textContent = "Copied";
+        showToast("Code copied to your clipboard.");
+      } catch {
+        showToast("Copying isn't available in this browser.", "error");
+      }
+    });
+  });
   const composerInput = document.querySelector("#chat-input");
   composerInput.addEventListener("input", () => {
     composerInput.style.height = "auto";
