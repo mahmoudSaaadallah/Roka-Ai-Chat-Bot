@@ -631,12 +631,23 @@ textarea:focus-visible {
   margin-top: 0;
 }
 
+.markdown-content {
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.76;
+  overflow-wrap: anywhere;
+}
+
 .markdown-content > :last-child {
   margin-bottom: 0;
 }
 
 .markdown-content p {
   margin: 0 0 0.9em;
+}
+
+.markdown-content p + p {
+  margin-top: 0.35em;
 }
 
 .markdown-content strong {
@@ -728,6 +739,19 @@ textarea:focus-visible {
   white-space: pre;
 }
 
+.markdown-content pre::-webkit-scrollbar {
+  height: 8px;
+}
+
+.markdown-content pre::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.markdown-content pre::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #2b2d39;
+}
+
 .markdown-content h1,
 .markdown-content h2,
 .markdown-content h3,
@@ -746,6 +770,12 @@ textarea:focus-visible {
 .markdown-content h4,
 .markdown-content h5,
 .markdown-content h6 { font-size: 1em; }
+
+.markdown-content h1 + p,
+.markdown-content h2 + p,
+.markdown-content h3 + p {
+  margin-top: 0;
+}
 
 .markdown-content blockquote {
   margin: 1em 0;
@@ -772,6 +802,10 @@ textarea:focus-visible {
 .markdown-content li {
   margin: 0.36em 0;
   padding-left: 0.2em;
+}
+
+.markdown-content li + li {
+  margin-top: 0.46em;
 }
 
 .markdown-content li::marker {
@@ -805,6 +839,12 @@ textarea:focus-visible {
 .markdown-content a:hover {
   color: #d8caff;
   text-decoration-color: currentColor;
+}
+
+.markdown-content a:focus-visible {
+  border-radius: 4px;
+  outline: 3px solid rgba(139, 92, 246, 0.32);
+  outline-offset: 3px;
 }
 
 [data-theme="light"] .markdown-content a {
