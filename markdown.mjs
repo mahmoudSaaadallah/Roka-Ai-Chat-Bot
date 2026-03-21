@@ -15,6 +15,34 @@ function sanitizeHref(value) {
   return "";
 }
 
+const languageLabels = {
+  js: "JavaScript",
+  javascript: "JavaScript",
+  ts: "TypeScript",
+  typescript: "TypeScript",
+  py: "Python",
+  python: "Python",
+  html: "HTML",
+  css: "CSS",
+  json: "JSON",
+  bash: "Shell",
+  sh: "Shell",
+  powershell: "PowerShell",
+};
+
+function renderCodeBlock(code, language = "") {
+  const safeLanguage = language.toLowerCase().replace(/[^a-z0-9+-]/g, "");
+  const label = languageLabels[safeLanguage] || safeLanguage || "Code";
+  return `
+    <div class="code-block">
+      <div class="code-toolbar">
+        <span>${escapeHtml(label)}</span>
+        <button type="button" data-copy-code aria-label="Copy code">Copy</button>
+      </div>
+      <pre data-language="${safeLanguage}"><code class="${safeLanguage ? `language-${safeLanguage}` : ""}">${escapeHtml(code)}</code></pre>
+    </div>`;
+}
+
 function renderInline(value) {
   const inlineCode = [];
   const links = [];
@@ -57,6 +85,11 @@ function renderTextBlock(block) {
   }
 
   const lines = block.split("\n");
+  if (lines.every((line) => /^ {4}|^\t/.test(line))) {
+    const code = lines.map((line) => line.replace(/^(?: {4}|\t)/, "")).join("\n");
+    return renderCodeBlock(code);
+  }
+
   const listPattern = /^\s*(?:[-+*]|\d+\.)\s+(.+)$/;
   if (lines.every((line) => listPattern.test(line))) {
     const ordered = /^\s*\d+\./.test(lines[0]);
@@ -103,15 +136,7 @@ export function renderMarkdown(markdown = "") {
       const codeMatch = paragraph.match(/^@@CODE:(\d+)@@$/);
       if (codeMatch) {
         const block = codeBlocks[Number(codeMatch[1])];
-        const language = block.language.replace(/[^a-z0-9+-]/g, "");
-        return `
-          <div class="code-block">
-            <div class="code-toolbar">
-              <span>${language || "code"}</span>
-              <button type="button" data-copy-code aria-label="Copy code">Copy</button>
-            </div>
-            <pre data-language="${language}"><code>${escapeHtml(block.code)}</code></pre>
-          </div>`;
+        return renderCodeBlock(block.code, block.language);
       }
       return renderTextBlock(paragraph);
     })

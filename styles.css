@@ -711,6 +711,21 @@ textarea:focus-visible {
   text-transform: uppercase;
 }
 
+.code-toolbar span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.code-toolbar span::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+}
+
 .code-toolbar button {
   padding: 6px 8px;
   border: 0;
