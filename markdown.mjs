@@ -43,6 +43,41 @@ function renderCodeBlock(code, language = "") {
     </div>`;
 }
 
+function splitTableRow(row) {
+  return row
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split(/(?<!\\)\|/)
+    .map((cell) => cell.trim().replaceAll("\\|", "|"));
+}
+
+function renderTable(lines) {
+  if (lines.length < 2 || !lines[0].includes("|") || !lines[1].includes("|")) return "";
+  const dividers = splitTableRow(lines[1]);
+  if (!dividers.length || !dividers.every((cell) => /^:?-{3,}:?$/.test(cell))) return "";
+
+  const headers = splitTableRow(lines[0]);
+  const alignments = dividers.map((cell) => {
+    if (cell.startsWith(":") && cell.endsWith(":")) return "center";
+    if (cell.endsWith(":")) return "right";
+    return "left";
+  });
+  const headerHtml = headers
+    .map((cell, index) => `<th style="text-align:${alignments[index] || "left"}">${renderInline(cell)}</th>`)
+    .join("");
+  const bodyHtml = lines
+    .slice(2)
+    .map((row) => {
+      const cells = splitTableRow(row);
+      return `<tr>${cells
+        .map((cell, index) => `<td style="text-align:${alignments[index] || "left"}">${renderInline(cell)}</td>`)
+        .join("")}</tr>`;
+    })
+    .join("");
+  return `<div class="table-wrap"><table><thead><tr>${headerHtml}</tr></thead><tbody>${bodyHtml}</tbody></table></div>`;
+}
+
 function renderInline(value) {
   const inlineCode = [];
   const links = [];
@@ -85,6 +120,9 @@ function renderTextBlock(block) {
   }
 
   const lines = block.split("\n");
+  const table = renderTable(lines);
+  if (table) return table;
+
   if (lines.every((line) => /^ {4}|^\t/.test(line))) {
     const code = lines.map((line) => line.replace(/^(?: {4}|\t)/, "")).join("\n");
     return renderCodeBlock(code);
