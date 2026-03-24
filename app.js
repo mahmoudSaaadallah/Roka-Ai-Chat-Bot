@@ -59,6 +59,13 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function getTextDirection(value) {
+  const text = String(value);
+  const rtlCharacters = (text.match(/[\u0590-\u08ff]/g) || []).length;
+  const latinCharacters = (text.match(/[A-Za-z]/g) || []).length;
+  return rtlCharacters > latinCharacters ? "rtl" : "ltr";
+}
+
 function render() {
   app.innerHTML = `
     <div class="workspace">
@@ -529,7 +536,7 @@ function renderConversation() {
                   <strong>${isUser ? "You" : "Roka"}</strong>
                   <span>${message.time || "Just now"}</span>
                 </div>
-                <div class="message-bubble ${isUser ? "" : "markdown-content"}">${
+                <div class="message-bubble ${isUser ? "" : "markdown-content"}" dir="${getTextDirection(message.text)}">${
                   isUser
                     ? escapeHtml(message.text).replaceAll("\n", "<br />")
                     : renderMarkdown(message.text)

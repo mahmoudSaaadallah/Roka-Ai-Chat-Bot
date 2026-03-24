@@ -671,6 +671,8 @@ textarea:focus-visible {
   background: rgba(139, 92, 246, 0.1);
   color: #d8caff;
   font: 500 0.88em/1.5 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 
 [data-theme="light"] .markdown-content code {
@@ -691,6 +693,7 @@ textarea:focus-visible {
   border: 1px solid var(--line-strong);
   border-radius: 14px;
   background: #0b0c12;
+  direction: ltr;
 }
 
 .markdown-content .code-block pre {
@@ -801,6 +804,12 @@ textarea:focus-visible {
   color: var(--muted-strong);
 }
 
+.markdown-content[dir="rtl"] blockquote {
+  border-right: 3px solid var(--accent);
+  border-left: 0;
+  border-radius: 10px 0 0 10px;
+}
+
 .markdown-content hr {
   height: 1px;
   margin: 1.4em 0;
@@ -812,6 +821,12 @@ textarea:focus-visible {
 .markdown-content ol {
   margin: 0.85em 0;
   padding-left: 1.45em;
+}
+
+.markdown-content[dir="rtl"] ul,
+.markdown-content[dir="rtl"] ol {
+  padding-right: 1.45em;
+  padding-left: 0;
 }
 
 .markdown-content li {
@@ -834,6 +849,11 @@ textarea:focus-visible {
   gap: 9px;
   margin-left: -1.4em;
   list-style: none;
+}
+
+.markdown-content[dir="rtl"] .task-list-item {
+  margin-right: -1.4em;
+  margin-left: 0;
 }
 
 .markdown-content .task-list-item input {
