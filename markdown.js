@@ -155,7 +155,7 @@ function renderTextBlock(block) {
 }
 
 /**
- * Render assistant text as safe, dependency-free Markdown.
+ * Render assistant text as safe, dependency-free browser Markdown.
  * More block and inline features are layered on by small parser helpers.
  */
 export function renderMarkdown(markdown = "") {

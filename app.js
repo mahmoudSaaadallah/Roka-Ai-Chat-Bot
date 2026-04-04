@@ -1,5 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import { renderMarkdown } from "./markdown.mjs";
+import { renderMarkdown } from "./markdown.js";
 
 const app = document.querySelector("#app");
 let toastTimer;

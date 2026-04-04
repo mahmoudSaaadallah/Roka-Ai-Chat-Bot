@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { renderMarkdown } from "./markdown.mjs";
+import { renderMarkdown } from "./markdown.js";
 
 test("escapes raw HTML before rendering", () => {
   const rendered = renderMarkdown('<script>alert("xss")</script>');
