@@ -51,6 +51,8 @@ npm test
 
 The key is stored in `sessionStorage`, so closing the browser tab clears it. Conversation history and theme preference use `localStorage`.
 
+Conversation history is saved only in the current browser profile and is limited to the 12 most recent conversations. It does not sync between devices. Clearing this site's browser storage also removes the saved conversations and theme preference.
+
 ## Keyboard shortcuts
 
 - `Ctrl/⌘ + N` — start a new conversation
