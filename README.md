@@ -51,6 +51,8 @@ npm test
 
 The key is stored in `sessionStorage`, so closing the browser tab clears it. Conversation history and theme preference use `localStorage`.
 
+If Roka cannot complete a request, verify that the Gemini key is valid and that the browser can reach the Gemini API. The green status indicator means a key is present; it does not validate the key before the first request.
+
 Conversation history is saved only in the current browser profile and is limited to the 12 most recent conversations. It does not sync between devices. Clearing this site's browser storage also removes the saved conversations and theme preference.
 
 ## Keyboard shortcuts
