@@ -43,6 +43,10 @@ Run the Markdown renderer tests with:
 npm test
 ```
 
+## Image studio
+
+Choose Square, Portrait, or Wide, then select a visual style and describe the image. When generation finishes, use **Download** to save the result or **Regenerate** to request another variation. The preview is kept in the current page session, so download an image you want to keep.
+
 ## Connect Gemini
 
 1. Open **Settings** in the sidebar.
