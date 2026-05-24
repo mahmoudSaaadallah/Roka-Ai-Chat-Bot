@@ -27,6 +27,8 @@ Assistant messages support the Markdown formats commonly used in technical answe
 
 Code blocks include their language and a copy button. Raw HTML is escaped, and links are limited to safe web, email, anchor, and relative URLs.
 
+The renderer covers the formats listed above rather than the full CommonMark specification. For example, use triple backticks around a code sample and optionally add a language such as `js` on the opening fence to label the block.
+
 ## Run locally
 
 Serve the project directory with any static server. For example:
