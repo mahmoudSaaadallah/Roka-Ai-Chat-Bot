@@ -49,6 +49,8 @@ npm test
 
 Choose Square, Portrait, or Wide, then select a visual style and describe the image. When generation finishes, use **Download** to save the result or **Regenerate** to request another variation. The preview is kept in the current page session, so download an image you want to keep.
 
+If an image fails to load, check the browser's internet connection and try again. Image creation depends on the external image service being available.
+
 ## Connect Gemini
 
 1. Open **Settings** in the sidebar.
