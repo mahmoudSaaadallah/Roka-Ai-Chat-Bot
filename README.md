@@ -39,6 +39,8 @@ python -m http.server 4173
 
 Then open `http://localhost:4173` in a browser.
 
+Keep the terminal running while using the app. Press `Ctrl + C` in that terminal when you want to stop the local server.
+
 Run the Markdown renderer tests with:
 
 ```powershell
