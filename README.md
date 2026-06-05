@@ -67,6 +67,8 @@ Conversation history is saved only in the current browser profile and is limited
 
 ## Keyboard shortcuts
 
+- `Enter` — send the current message
+- `Shift + Enter` — insert a new line in the message
 - `Ctrl/⌘ + N` — start a new conversation
 - `Ctrl/⌘ + K` — jump to the message composer
 - `Esc` — close settings or mobile navigation
