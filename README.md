@@ -53,6 +53,8 @@ Choose Square, Portrait, or Wide, then select a visual style and describe the im
 
 If an image fails to load, check the browser's internet connection and try again. Image creation depends on the external image service being available.
 
+Image prompts can contain up to 600 characters. Include the subject, setting, lighting, and mood to make your description easier to interpret.
+
 ## Connect Gemini
 
 1. Open **Settings** in the sidebar.
