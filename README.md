@@ -11,6 +11,10 @@ Roka AI is a polished, responsive browser workspace for AI conversations and cre
 - Session-only API key storage—credentials are never committed to the repository
 - Safe Markdown rendering for structured AI replies
 
+## Starting a conversation
+
+Select a suggested prompt on the welcome screen to fill the composer, then edit it before sending. Chat messages can contain up to 2,000 characters. Use **New conversation** to start a separate thread, or select a saved conversation under **Recent** to continue it.
+
 ## Privacy and external services
 
 Chat prompts are sent to the Google Gemini API with the API key you provide. Image prompts are sent to the Pollinations image service. Conversation history and the selected theme stay in this browser's local storage; the Gemini key stays in the current tab session.
